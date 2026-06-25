@@ -99,9 +99,11 @@ class CustomerController extends Controller
             'items.item'
         ]);
 
+        $table = $order->table;
+
         return view(
             'customer.track-order.index',
-            compact('order')
+            compact('order', 'table')
         );
     }
 

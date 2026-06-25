@@ -12,7 +12,7 @@
 
         <div class="center-side">
             <span class="table-badge">
-                Table {{ isset($table) ? $table->id : '01' }}
+                {{ $table?->name ?? 'Table' }}
             </span>
         </div>
 

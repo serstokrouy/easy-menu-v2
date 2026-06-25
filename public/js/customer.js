@@ -267,13 +267,10 @@ function renderCart() {
     ) {
 
         container.innerHTML = `
-            <div
-                style="
-                    text-align:center;
-                    padding:30px;
-                "
-            >
-                Cart Empty
+            <div class="cart-empty">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <h3>Your cart is empty</h3>
+                <p>Browse the menu and tap + to add your favorite dishes.</p>
             </div>
         `;
 
@@ -286,15 +283,25 @@ function renderCart() {
         cart.map(
             item => `
             <div class="cart-item">
-                <img src="${item.image}" class="cart-image">
-                <div class="cart-info">
-                    <h4>${item.name}</h4>
-                    <p>$${item.price.toFixed(2)}</p>
+                <img src="${item.image}" class="cart-image" alt="${item.name}">
+                <div class="cart-item-main">
+                    <div class="cart-info">
+                        <h4>${item.name}</h4>
+                        <p>$${item.price.toFixed(2)} each</p>
+                    </div>
+                    <div class="cart-quantity">
+                        <button onclick="decreaseQuantity(${item.item_id})">-</button>
+                        <span class="quantity-value">${item.quantity}</span>
+                        <button onclick="increaseQuantity(${item.item_id})">+</button>
+                    </div>
                 </div>
-                <div class="cart-actions">
-                    <button onclick="decreaseQuantity(${item.item_id})">-</button>
-                    <span>${item.quantity}</span>
-                    <button onclick="increaseQuantity(${item.item_id})">+</button>
+                <div class="cart-item-actions">
+                    <div class="cart-item-total">
+                        $${(item.price * item.quantity).toFixed(2)}
+                    </div>
+                    <button class="remove-btn" onclick="removeItem(${item.item_id})">
+                        Remove
+                    </button>
                 </div>
             </div>
         `
@@ -340,8 +347,23 @@ function calculateTotal() {
             total.toFixed(2);
     }
 
+    const checkoutBtn = document.querySelector('.checkout-btn');
+    if (checkoutBtn) {
+        checkoutBtn.disabled = total <= 0;
+    }
+
     return total;
 }
+
+/* ==========================
+   CART INIT
+========================== */
+
+document.addEventListener('DOMContentLoaded', function () {
+    checkCartExpiration();
+    updateCartBadge();
+    renderCart();
+});
 
 /* ==========================
    CART DRAWER

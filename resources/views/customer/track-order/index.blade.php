@@ -113,7 +113,11 @@
                         if ($index < $currentStep) {
                             $state = 'served';
                         } elseif ($index === $currentStep) {
-                            $state = 'active';
+                            if ($order->status === 'finished') {
+                                $state = 'served';
+                            } else {
+                                $state = 'active';
+                            }
                         }
 
                         $time = '';
@@ -178,13 +182,17 @@
             steps.forEach(li => {
                 const idx = parseInt(li.dataset.stepIndex, 10);
                 li.classList.remove('served', 'active', 'disabled');
-                if (idx < current) li.classList.add('served');
-                else if (idx === current) li.classList.add('active');
-                else li.classList.add('disabled');
-            });
-
-            // Dynamically update upper-right header badge class and text
-            const badge = document.getElementById('header-status-badge');
+                    if (idx < current) {
+                        li.classList.add('served');
+                    } else if (idx === current) {
+                        if (status === 'finished') {
+                            li.classList.add('served');
+                        } else {
+                            li.classList.add('active');
+                        }
+                    } else {
+                        li.classList.add('disabled');
+                    }
             if (badge) {
                 badge.className = 'status-badge status-' + status;
                 badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
