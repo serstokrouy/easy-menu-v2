@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EASY MENU</title>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:#ececec;
+    display:flex;
+    justify-content:center;
+}
+
+/* Mobile App Container */
+.app{
+    width:100%;
+    max-width:430px;
+    min-height:100vh;
+    background:#fff;
+    position:relative;
+    overflow:hidden;
+}
+
+/* Demo Content */
+.content{
+    padding:20px;
+    padding-bottom:120px;
+}
+
+.header{
+    padding:20px;
+    text-align:center;
+}
+
+.header h2{
+    color:#ff6b35;
+}
+
+/* Footer Navigation */
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    width:100%;
+    max-width:430px;
+
+    background:#f7f7f7;
+    border-top:1px solid #e5e5e5;
+
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+
+    padding:10px 13px;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom));
+
+    border-radius:25px 25px 0 0;
+
+    box-shadow:0 -5px 15px rgba(0,0,0,.08);
+}
+
+.nav-item{
+    text-decoration:none;
+    color:#0b6b61;
+
+    width:80px;
+    height:70px;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:35px;
+    transition:.3s;
+}
+
+.nav-item i{
+    font-size:24px;
+    margin-bottom:4px;
+}
+
+.nav-item span{
+    font-size:14px;
+    font-weight:600;
+}
+
+/* Active Item */
+.nav-item.active{
+    background:#ff6b35;
+    width:100px;
+    color:#222;
+}
+
+.nav-item.active i,
+.nav-item.active span{
+    color:#222;
+}
+
+.nav-item:hover{
+    transform:translateY(-2px);
+}
+
+/* Extra Small Phones */
+@media(max-width:380px){
+
+    .nav-item{
+        width:40px;
+        height:35px;
+    }
+
+    .nav-item.active{
+        width:50px;
+    }
+
+    .nav-item i{
+        font-size:14px;
+    }
+
+    .nav-item span{
+        font-size:8px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+    <div class="header">
+        <h2>EASY MENU</h2>
+    </div>
+
+    <div class="content">
+        <h3>Restaurant Menu</h3>
+        <p>
+            This area contains your products, categories,
+            food cards, cart, etc.
+        </p>
+    </div>
+
+    <div class="bottom-nav">
+
+        <a href="#" class="nav-item active">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Menu</span>
+        </a>
+
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>Cart</span>
+        </a>
+
+        <a href="#" class="nav-item">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Orders</span>
+        </a>
+    </div>
+</div>
+
+<script>
+const items = document.querySelectorAll('.nav-item');
+
+items.forEach(item=>{
+    item.addEventListener('click',()=>{
+        items.forEach(nav=>{
+            nav.classList.remove('active');
+        });
+
+        item.classList.add('active');
+    });
+});
+</script>
+
+</body>
+</html>
