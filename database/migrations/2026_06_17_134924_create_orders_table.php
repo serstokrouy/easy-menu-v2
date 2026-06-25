@@ -28,8 +28,10 @@ return new class extends Migration
                 'status',
                 [
                     'pending',
+                    'accepted',
                     'preparing',
                     'completed',
+                    'finished',
                     'cancelled'
                 ]
             )->default('pending');

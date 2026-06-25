@@ -19,6 +19,22 @@
             <p>Manage customer orders.</p>
         </div>
 
+        <div class="page-actions">
+            @if($showAll)
+                <a href="{{ route('admin.orders.index') }}" class="action-btn">
+                    Show today
+                </a>
+            @else
+                <a href="{{ route('admin.orders.index', ['all' => 1]) }}" class="action-btn">
+                    Show all days
+                </a>
+            @endif
+        </div>
+
+    </div>
+
+    <div class="filter-note">
+        Showing {{ $showAll ? 'all orders' : "today's orders" }}.
     </div>
 
     <!-- Stats -->
@@ -55,14 +71,14 @@
         <div class="stat-box">
 
             <div>
-                <span>Completed</span>
+                <span>Finished</span>
                 <h2>
-                    {{ $orders->where('status','completed')->count() }}
+                    {{ $orders->where('status','finished')->count() }}
                 </h2>
             </div>
 
             <div class="stat-icon success">
-                <i class="fa-solid fa-check"></i>
+                <i class="fa-solid fa-flag-checkered"></i>
             </div>
 
         </div>
@@ -79,7 +95,7 @@
                 <thead>
 
                     <tr>
-                        <th>#</th>
+                        <th> </th>
                         <th>Order No</th>
                         <th>Table</th>
                         <th>Items</th>
@@ -141,6 +157,12 @@
                                         Pending
                                     </span>
 
+                                @elseif($order->status == 'accepted')
+
+                                    <span class="badge primary">
+                                        Accepted
+                                    </span>
+
                                 @elseif($order->status == 'preparing')
 
                                     <span class="badge info">
@@ -151,6 +173,12 @@
 
                                     <span class="badge success">
                                         Completed
+                                    </span>
+
+                                @elseif($order->status == 'finished')
+
+                                    <span class="badge success">
+                                        Finished
                                     </span>
 
                                 @else
@@ -192,6 +220,13 @@
                                         </option>
 
                                         <option
+                                            value="accepted"
+                                            {{ $order->status == 'accepted' ? 'selected' : '' }}
+                                        >
+                                            Accepted
+                                        </option>
+
+                                        <option
                                             value="preparing"
                                             {{ $order->status == 'preparing' ? 'selected' : '' }}
                                         >
@@ -203,6 +238,13 @@
                                             {{ $order->status == 'completed' ? 'selected' : '' }}
                                         >
                                             Completed
+                                        </option>
+
+                                        <option
+                                            value="finished"
+                                            {{ $order->status == 'finished' ? 'selected' : '' }}
+                                        >
+                                            Finished
                                         </option>
 
                                         <option
@@ -303,12 +345,18 @@
                     if (newStatus === 'pending') {
                         badgeClass += 'warning';
                         badgeText = 'Pending';
+                    } else if (newStatus === 'accepted') {
+                        badgeClass += 'primary';
+                        badgeText = 'Accepted';
                     } else if (newStatus === 'preparing') {
                         badgeClass += 'info';
                         badgeText = 'Preparing';
                     } else if (newStatus === 'completed') {
                         badgeClass += 'success';
                         badgeText = 'Completed';
+                    } else if (newStatus === 'finished') {
+                        badgeClass += 'success';
+                        badgeText = 'Finished';
                     } else if (newStatus === 'cancelled') {
                         badgeClass += 'danger';
                         badgeText = 'Cancelled';
@@ -317,12 +365,12 @@
                     statusCell.innerHTML = `<span class="${badgeClass}">${badgeText}</span>`;
 
                     const pendingCount = document.querySelectorAll('tr[data-status="pending"]').length;
-                    const completedCount = document.querySelectorAll('tr[data-status="completed"]').length;
+                    const finishedCount = document.querySelectorAll('tr[data-status="finished"]').length;
 
                     const statBoxes = document.querySelectorAll('.stat-box');
                     if (statBoxes.length >= 2) {
                         statBoxes[1].querySelector('h2').textContent = pendingCount;
-                        statBoxes[2].querySelector('h2').textContent = completedCount;
+                        statBoxes[2].querySelector('h2').textContent = finishedCount;
                     }
                 } catch (error) {
                     console.error('Error updating status:', error);

@@ -110,11 +110,16 @@ class CustomerController extends Controller
      */
     public function status(Order $order)
     {
+        $itemsCount = $order->items()->sum('quantity');
+
         return response()->json([
             'id' => $order->id,
             'status' => $order->status,
             'total' => $order->total,
             'table' => $order->table?->name,
+            'items_count' => $itemsCount,
+            'created_at' => $order->created_at?->toIso8601String(),
+            'updated_at' => $order->updated_at?->toIso8601String(),
         ]);
     }
 }

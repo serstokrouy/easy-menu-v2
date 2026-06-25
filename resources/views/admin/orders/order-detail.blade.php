@@ -62,14 +62,18 @@
                     @method('PATCH')
 
                     <div class="status-buttons">
-                        @foreach(['pending' => 'Pending', 'preparing' => 'Preparing', 'completed' => 'Completed', 'cancelled' => 'Cancelled'] as $statusValue => $statusLabel)
+                        @foreach(['pending' => 'Pending', 'accepted' => 'Accepted', 'preparing' => 'Preparing', 'completed' => 'Completed', 'finished' => 'Finished', 'cancelled' => 'Cancelled'] as $statusValue => $statusLabel)
                             <button type="button" class="status-btn {{ $order->status == $statusValue ? 'active' : '' }}" data-status="{{ $statusValue }}">
                                 @if($statusValue === 'pending')
                                     <i class="fa-solid fa-clock"></i>
+                                @elseif($statusValue === 'accepted')
+                                    <i class="fa-solid fa-check"></i>
                                 @elseif($statusValue === 'preparing')
                                     <i class="fa-solid fa-fire"></i>
                                 @elseif($statusValue === 'completed')
                                     <i class="fa-solid fa-check-circle"></i>
+                                @elseif($statusValue === 'finished')
+                                    <i class="fa-solid fa-flag-checkered"></i>
                                 @else
                                     <i class="fa-solid fa-ban"></i>
                                 @endif
@@ -180,7 +184,7 @@
                     <div class="receipt-item">
                         <div class="receipt-item-name">
                             {{ $item->item->name }}
-                            <span class="receipt-item-qty">{{ $item->quantity }}x</span>
+                            <span class="receipt-item-qty">x{{ $item->quantity }}</span>
                         </div>
                         <div class="receipt-item-price">
                             ${{ number_format($item->price * $item->quantity, 2) }}
@@ -284,8 +288,8 @@
 
                     submitButton.textContent = 'Status Updated!';
 
-                    if (newStatus === 'completed') {
-                        announceOrderCompletion('Order #{{ $order->id }}, Table {{ $order->table->name }} is ready!');
+                    if (newStatus === 'finished') {
+                        announceOrderCompletion('Order #{{ $order->id }}, Table {{ $order->table->name }} is finished. Please proceed to the next order.');
                     }
 
                     setTimeout(() => {

@@ -12,12 +12,12 @@
 
         <div class="center-side">
             <span class="table-badge">
-                Table {{ $table->id ?? '01' }}
+                Table {{ isset($table) ? $table->id : '01' }}
             </span>
         </div>
 
         <div class="right-side">
-           <a href="{{ route('cart.show', $table ?? 1) }}"
+           <a href="{{ route('cart.show', isset($table) ? $table : 1) }}"
             class="cart-btn">
 
                 <i class="fa-solid fa-cart-shopping"></i>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\Table;
@@ -12,18 +13,25 @@ use App\Models\OrderItem;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with([
+        $ordersQuery = Order::with([
             'table',
             'items.item'
         ])
-        ->latest()
-        ->paginate(10);
+        ->latest();
+
+        if (! $request->boolean('all')) {
+            $ordersQuery->whereDate('created_at', Carbon::today());
+        }
+
+        $orders = $ordersQuery->paginate(10)->withQueryString();
+
+        $showAll = $request->boolean('all');
 
         return view(
             'admin.orders.index',
-            compact('orders')
+            compact('orders', 'showAll')
         );
     }
 
@@ -91,23 +99,28 @@ class OrderController extends Controller
         ]);
     }
 
-    public function updateStatus(
-        Order $order,
-        Request $request
-    ) {
+    public function updateStatus(Order $order, Request $request)
+    {
+        try {
 
-        $order->update([
-            'status' =>
-                $request->status
-        ]);
-
-        if ($request->wantsJson() || $request->ajax()) {
-            return response()->json([
-                'status' => $order->status,
-                'message' => 'Order status updated successfully.',
+            $validated = $request->validate([
+                'status' => 'required|string|in:pending,cancelled,accepted,preparing,completed,finished',
             ]);
-        }
 
-        return back();
+            $order->status = $validated['status'];
+            $order->save();
+
+            return response()->json([
+                'success' => true
+            ]);
+
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'message' => $e->getMessage(),
+                'request' => $request->all(),
+            ], 422);
+
+        }
     }
 }
