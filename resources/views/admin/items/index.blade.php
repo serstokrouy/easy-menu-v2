@@ -118,7 +118,7 @@
                             @if($item->image)
 
                                 <img
-                                    src="{{ asset('storage/' . $item->image) }}"
+                                    src="{{ Storage::disk(config('filesystems.default'))->url($item->image) }}"
                                     class="item-thumb"
                                     alt="{{ $item->name }}"
                                 >

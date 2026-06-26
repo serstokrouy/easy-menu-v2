@@ -103,7 +103,7 @@
                         <div class="item-info">
                             <div class="item-image">
                                 @if($item->item->image)
-                                    <img src="{{ asset('storage/' . $item->item->image) }}" alt="{{ $item->item->name }}">
+                                    <img src="{{ Storage::disk(config('filesystems.default'))->url($item->item->image) }}" alt="{{ $item->item->name }}">
                                 @else
                                     <div class="item-image-fallback">
                                         <i class="fa-solid fa-bowl-food"></i>

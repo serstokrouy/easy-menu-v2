@@ -43,8 +43,8 @@
                                 @if($notification->audio_path)
                                     <div style="margin-top: 8px;">
                                         <audio controls style="width:100%;">
-                                            <source src="{{ asset('storage/' . $notification->audio_path) }}" type="audio/webm">
-                                            <source src="{{ asset('storage/' . $notification->audio_path) }}" type="audio/ogg">
+                                            <source src="{{ Storage::disk(config('filesystems.default'))->url($notification->audio_path) }}" type="audio/webm">
+                                            <source src="{{ Storage::disk(config('filesystems.default'))->url($notification->audio_path) }}" type="audio/ogg">
                                             Your browser does not support audio playback.
                                         </audio>
                                     </div>
@@ -58,11 +58,9 @@
                             <td>{{ $notification->created_at->format('d M Y, H:i') }}</td>
                             <td>
                                 @if($notification->status === 'new')
-                                    <form action="{{ route('admin.staffNotifications.markRead', $notification) }}" method="POST">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="action-btn small">Mark Read</button>
-                                    </form>
+                                    <button type="button" class="action-btn small mark-read-btn" data-url="{{ route('admin.staffNotifications.markRead', $notification) }}">
+                                        Mark Read
+                                    </button>
                                 @else
                                     <span class="action-btn small disabled">Read</span>
                                 @endif
@@ -89,4 +87,82 @@
 
 </div>
 
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        function updateHeaderCount() {
+            const countEl = document.getElementById('notificationCount');
+            if (!countEl) {
+                return;
+            }
+
+            const current = parseInt(countEl.textContent || '0', 10);
+            const next = Math.max(current - 1, 0);
+
+            if (next <= 0) {
+                countEl.style.display = 'none';
+                countEl.textContent = '';
+            } else {
+                countEl.textContent = next;
+                countEl.style.display = 'inline-flex';
+            }
+        }
+
+        document.querySelectorAll('.mark-read-btn').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                const url = button.dataset.url;
+                if (!url || !token) {
+                    return;
+                }
+
+                button.disabled = true;
+                const originalText = button.textContent;
+                button.textContent = 'Saving...';
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': token,
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+
+                    const row = button.closest('tr');
+                    const statusCell = row.querySelector('td:nth-child(5) .badge');
+                    if (statusCell) {
+                        statusCell.textContent = 'Read';
+                        statusCell.classList.remove('danger');
+                        statusCell.classList.add('success');
+                    }
+
+                    row.classList.remove('notification-new');
+
+                    const readSpan = document.createElement('span');
+                    readSpan.className = 'action-btn small disabled';
+                    readSpan.textContent = 'Read';
+                    button.parentNode.replaceChild(readSpan, button);
+
+                    updateHeaderCount();
+                } catch (error) {
+                    console.error(error);
+                    button.disabled = false;
+                    button.textContent = originalText || 'Mark Read';
+                }
+            });
+        });
+    });
+</script>
 @endsection

@@ -137,7 +137,7 @@
                                     class="btn-icon info"
 
                                     onclick="showQrModal(
-                                        '{{ asset($table->qr_code) }}',
+                                        '{{ Storage::disk(config('filesystems.default'))->url($table->qr_code) }}',
                                         '{{ $table->name }}'
                                     )"
                                 >

@@ -15,11 +15,9 @@
             <button class="menu-toggle">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <a href="{{ route('admin.staffNotifications.index') }}" class="notification-toggle" aria-label="View notifications">
+            <a href="{{ route('admin.staffNotifications.index') }}" class="notification-toggle" aria-label="View notifications" id="notificationToggle">
                 <i class="fa-solid fa-bell"></i>
-                @if(!empty($newStaffNotificationsCount))
-                    <span class="notification-count">{{ $newStaffNotificationsCount }}</span>
-                @endif
+                <span class="notification-count" id="notificationCount" style="display: {{ !empty($newStaffNotificationsCount) ? 'inline-flex' : 'none' }};">{{ $newStaffNotificationsCount ?? '' }}</span>
             </a>
 
         </div>
@@ -119,5 +117,29 @@ document.addEventListener('DOMContentLoaded', () => {
             menu.classList.remove('show');
         }
     });
+
+    async function refreshNotificationCount() {
+        try {
+            const response = await fetch('{{ route('admin.staffNotifications.count') }}');
+            if (!response.ok) {
+                return;
+            }
+            const data = await response.json();
+            const countEl = document.getElementById('notificationCount');
+
+            if (data.count > 0) {
+                countEl.textContent = data.count;
+                countEl.style.display = 'inline-flex';
+            } else {
+                countEl.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Notification refresh failed:', error);
+        }
+    }
+
+    const notificationRefreshInterval = 10000;
+    refreshNotificationCount();
+    setInterval(refreshNotificationCount, notificationRefreshInterval);
 });
 </script>

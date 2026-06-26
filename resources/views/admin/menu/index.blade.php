@@ -49,10 +49,10 @@
                 <div class="item-image-wrap">
                     @if($item->image)
                         @if($item->is_available)
-                            <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
+                            <img src="{{ Storage::disk(config('filesystems.default'))->url($item->image) }}" alt="{{ $item->name }}">
                         @else
                             <div class="item-image-unavailable">
-                                <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
+                                <img src="{{ Storage::disk(config('filesystems.default'))->url($item->image) }}" alt="{{ $item->name }}">
                                 <span class="offline-badge">Unavailable</span>
                             </div>
                         @endif

@@ -34,7 +34,7 @@
     </div>
 
     <div class="filter-note">
-        Showing {{ $showAll ? 'all orders' : "today's orders" }}.
+        <h2>Showing {{ $showAll ? 'all orders' : "today's orders" }}.</h2>
     </div>
 
     <!-- Stats -->

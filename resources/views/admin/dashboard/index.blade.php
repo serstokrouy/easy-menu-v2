@@ -41,7 +41,7 @@
         </div>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card" data-url="{{ route('admin.orders.index') }}">
         <div class="stat-content">
             <div>
                 <span class="stat-title">Orders</span>
@@ -59,7 +59,7 @@
         </div>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card" >
         <div class="stat-content">
             <div>
                 <span class="stat-title">Tables served</span>
@@ -77,7 +77,7 @@
         </div>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card" data-url="{{ route('items.index') }}">
         <div class="stat-content">
             <div>
                 <span class="stat-title">Menu items</span>
@@ -192,6 +192,48 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+    // link direction
+    const linkDirection = document.querySelector('.stat-card');
+    document.querySelectorAll('.stat-card').forEach(card => {
+
+        card.style.cursor = 'pointer';
+
+        card.addEventListener('click', function () {
+
+            const url = this.dataset.url;
+
+            if (url) {
+                window.location.href = url;
+            }
+
+        });
+
+    });
+    document.querySelectorAll('.stat-card').forEach(card => {
+
+        card.style.cursor = 'pointer';
+
+        card.addEventListener('click', function () {
+
+            if (this.querySelector('.stat-icon.order')) {
+                window.location.href = "{{ route('admin.orders.index') }}";
+            }
+
+            else if (this.querySelector('.stat-icon.product')) {
+                window.location.href = "{{ route('items.index') }}";
+            }
+
+            else if (this.querySelector('.stat-icon.customer')) {
+                window.location.href = "#";
+            }
+
+            else if (this.querySelector('.stat-icon.revenue')) {
+                window.location.href = "#";
+            }
+
+        });
+
+    });
 
     // Sales Chart
     const salesElement = document.querySelector('#salesChart');

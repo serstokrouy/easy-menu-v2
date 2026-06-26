@@ -137,7 +137,10 @@ class CustomerController extends Controller
 
         $audioPath = null;
         if ($request->hasFile('audio')) {
-            $audioPath = $request->file('audio')->store('staff-notifications', 'public');
+            $disk = config('filesystems.default');
+            $audioPath = $request->file('audio')->store('staff-notifications', $disk);
+            // make sure audio is public
+            \Illuminate\Support\Facades\Storage::disk($disk)->setVisibility($audioPath, 'public');
         }
 
         StaffNotification::create([

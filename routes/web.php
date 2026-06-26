@@ -96,6 +96,11 @@ Route::get(
     [StaffNotificationController::class, 'index']
 )->name('admin.staffNotifications.index');
 
+Route::get(
+    '/admin/staff-notifications/count',
+    [StaffNotificationController::class, 'unreadCount']
+)->name('admin.staffNotifications.count');
+
 Route::patch(
     '/admin/staff-notifications/{notification}/read',
     [StaffNotificationController::class, 'markAsRead']

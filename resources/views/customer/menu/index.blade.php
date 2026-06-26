@@ -38,7 +38,7 @@
             <div class="food-card">
                     <div class="food-image-wrapper">
                         @if($item->image !== null)
-                            <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}"
+                            <img src="{{ Storage::disk(config('filesystems.default'))->url($item->image) }}" alt="{{ $item->name }}"
                             class="food-image">
                         @else
                             <div class="no-image">
@@ -67,7 +67,7 @@
                     data-id="{{ $item->id }}"
                     data-name="{{ $item->name }}"
                     data-price="{{ $item->price }}"
-                    data-image="{{ $item->image ? asset('storage/'.$item->image) : '' }}"
+                    data-image="{{ $item->image ? Storage::disk(config('filesystems.default'))->url($item->image) : '' }}"
                 >
                     <i class="fa-solid fa-cart-plus"></i>
                     បន្ថែមទៅកន្ត្រក

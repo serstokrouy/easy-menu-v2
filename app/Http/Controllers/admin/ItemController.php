@@ -70,13 +70,17 @@ class ItemController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
+            $disk = config('filesystems.default');
 
             $validated['image'] =
                 $request->file('image')
                     ->store(
                         'items',
-                        'public'
+                        $disk
                     );
+
+            // Ensure uploaded image is publicly accessible when using remote disks
+            Storage::disk($disk)->setVisibility($validated['image'], 'public');
         }
 
         $validated['is_available'] =
@@ -149,13 +153,15 @@ class ItemController extends Controller
 
         if ($request->hasFile('image')) {
 
+            $disk = config('filesystems.default');
+
             if (
                 $item->image &&
-                Storage::disk('public')
+                Storage::disk($disk)
                     ->exists($item->image)
             ) {
 
-                Storage::disk('public')
+                Storage::disk($disk)
                     ->delete($item->image);
             }
 
@@ -163,7 +169,7 @@ class ItemController extends Controller
                 $request->file('image')
                     ->store(
                         'items',
-                        'public'
+                        $disk
                     );
         }
 
@@ -187,13 +193,15 @@ class ItemController extends Controller
      */
     public function destroy(Item $item)
     {
+        $disk = config('filesystems.default');
+
         if (
             $item->image &&
-            Storage::disk('public')
+            Storage::disk($disk)
                 ->exists($item->image)
         ) {
 
-            Storage::disk('public')
+            Storage::disk($disk)
                 ->delete($item->image);
         }
 

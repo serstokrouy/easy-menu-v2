@@ -17,10 +17,21 @@ class StaffNotificationController extends Controller
         return view('admin.staff-notifications.index', compact('notifications'));
     }
 
-    public function markAsRead(StaffNotification $notification)
+    public function unreadCount()
+    {
+        return response()->json([
+            'count' => StaffNotification::where('status', 'new')->count(),
+        ]);
+    }
+
+    public function markAsRead(Request $request, StaffNotification $notification)
     {
         if ($notification->status !== 'read') {
             $notification->update(['status' => 'read']);
+        }
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json(['success' => true]);
         }
 
         return redirect()->back()->with('success', 'Notification marked as read.');

@@ -722,6 +722,12 @@ table td {
     margin-bottom: 30px;
 }
 
+.filter-note {
+    margin-bottom: 20px;
+    color: var(--color-muted);
+    font-weight: 600;
+}
+
 .stat-box {
     display: flex;
     justify-content: space-between;

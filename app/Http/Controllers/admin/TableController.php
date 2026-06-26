@@ -47,34 +47,22 @@ class TableController extends Controller
 
         $table = Table::create($validated);
 
-        // Create QR directory
-        $directory = public_path('storage/qrcodes');
-
-        if (!File::exists($directory)) {
-            File::makeDirectory(
-                $directory,
-                0755,
-                true
-            );
-        }
-
-        // QR URL
-        $url = route(
-            'menu.table',
-            $table->id
-        );
-
+        // Generate QR content and store on configured disk
+        $url = route('menu.table', $table->id);
         $filename = "table_{$table->id}.svg";
-
-        QrCode::format('svg')
+        $svg = QrCode::format('svg')
             ->size(300)
-            ->generate(
-                $url,
-                $directory . '/' . $filename
-            );
+            ->generate($url);
+
+        $disk = config('filesystems.default');
+        $path = 'qrcodes/' . $filename;
+        \Illuminate\Support\Facades\Storage::disk($disk)->put($path, $svg);
+
+        // Ensure public visibility for QR code
+        \Illuminate\Support\Facades\Storage::disk($disk)->setVisibility($path, 'public');
 
         $table->update([
-            'qr_code' => 'storage/qrcodes/' . $filename,
+            'qr_code' => $path,
         ]);
 
         return redirect()
@@ -98,26 +86,20 @@ class TableController extends Controller
 
         $table->update($validated);
 
-        // Check if the QR code column is empty using the correct column name 'qr_code'
+        // Check if the QR code column is empty and create/upload to disk
         if (empty($table->qr_code)) {
-            // Create QR directory matching the store method
-            $directory = public_path('storage/qrcodes');
-            if (!File::exists($directory)) {
-                File::makeDirectory($directory, 0755, true);
-            }
-
-            // QR URL matching the store method
             $url = route('menu.table', $table->id);
             $filename = "table_{$table->id}.svg";
-
-            // Save directly to disk using the file path inside generate()
-            QrCode::format('svg')
+            $svg = QrCode::format('svg')
                 ->size(300)
-                ->generate($url, $directory . '/' . $filename);
+                ->generate($url);
 
-            // Update the database with the matching relative path pattern
+            $disk = config('filesystems.default');
+            $path = 'qrcodes/' . $filename;
+            \Illuminate\Support\Facades\Storage::disk($disk)->put($path, $svg);
+
             $table->update([
-                'qr_code' => 'storage/qrcodes/' . $filename,
+                'qr_code' => $path,
             ]);
         }
 
@@ -131,15 +113,11 @@ class TableController extends Controller
      */
     public function destroy(Table $table)
     {
-        if (
-            $table->qr_code &&
-            File::exists(
-                public_path($table->qr_code)
-            )
-        ) {
-            File::delete(
-                public_path($table->qr_code)
-            );
+        if ($table->qr_code) {
+            $disk = config('filesystems.default');
+            if (\Illuminate\Support\Facades\Storage::disk($disk)->exists($table->qr_code)) {
+                \Illuminate\Support\Facades\Storage::disk($disk)->delete($table->qr_code);
+            }
         }
 
         $table->delete();
