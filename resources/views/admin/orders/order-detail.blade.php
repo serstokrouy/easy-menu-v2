@@ -12,6 +12,9 @@
             <h1>Order #{{ $order->id }}</h1>
         </div>
         <div class="header-actions">
+            <a href="{{ route('admin.orders.tableInvoice', $order->table) }}" class="icon-btn" title="Table Invoice">
+                <i class="fa-solid fa-receipt"></i>
+            </a>
             <button type="button" class="icon-btn" onclick="window.print()" title="Print Order">
                 <i class="fa-solid fa-print"></i>
             </button>

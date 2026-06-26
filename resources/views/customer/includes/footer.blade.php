@@ -12,7 +12,7 @@
             <span>Cart</span>
         </a>
 
-        <a href="#" class="nav-item">
+        <a href="{{ route('customer.orders', isset($table) ? $table : 1) }}" class="nav-item">
             <i class="fa-solid fa-receipt"></i>
             <span>Orders</span>
         </a>
@@ -21,8 +21,15 @@
 
 <script>
 const items = document.querySelectorAll('.nav-item');
+const currentPath = window.location.pathname;
 
 items.forEach(item=>{
+    const anchor = item.getAttribute('href');
+
+    if (anchor && currentPath.startsWith(anchor)) {
+        item.classList.add('active');
+    }
+
     item.addEventListener('click',()=>{
         items.forEach(nav=>{
             nav.classList.remove('active');

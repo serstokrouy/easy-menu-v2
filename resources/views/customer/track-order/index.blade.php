@@ -162,11 +162,48 @@
 
 </div>
 
+<div class="modal" id="contactModal">
+    <div class="modal-content contact-modal">
+        <div class="modal-header">
+            <h2>Contact Staff</h2>
+            <button type="button" class="close-btn" id="close-contact-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom: 12px; color: #334155;">If you need help with your order or table, our staff will be notified immediately.</p>
+            <p style="margin-bottom: 8px;"><strong>Order number:</strong> #{{ $order->id }}</p>
+            <p style="margin-bottom: 8px;"><strong>Phone:</strong> <a href="tel:+85523999888">+855 23 999 888</a></p>
+            <p style="margin-bottom: 16px; color: #334155;">Describe your request so staff can assist you faster.</p>
+
+            <div class="form-group">
+                <label for="staffMessage">Message</label>
+                <textarea id="staffMessage" placeholder="Please enter your request here..."></textarea>
+                <div class="voice-actions">
+                    <button type="button" class="btn-secondary voice-btn" id="voice-input-btn">
+                        <i class="fa-solid fa-microphone"></i> Record Voice
+                    </button>
+                    <span id="voiceStatus" class="voice-status">Tap to record</span>
+                </div>
+                <div class="voice-preview" id="voicePreview" style="display:none; margin-top:16px;">
+                    <audio id="voicePlayback" controls></audio>
+                    <button type="button" class="btn-secondary small" id="clearVoiceBtn">Clear audio</button>
+                </div>
+                <div id="contactError" class="form-error" style="display:none;"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" id="cancel-contact-modal">Close</button>
+            <button type="button" class="btn-primary" id="notify-staff-btn">Notify Staff</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    (function() {
+    document.addEventListener('DOMContentLoaded', function() {
         const orderId = document.getElementById('track-header').dataset.orderId;
         const statusUrl = '{{ url("/order-status") }}' + '/' + orderId;
-                const statusOrder = { pending: 0, accepted: 1, preparing: 2, completed: 3, finished: 4, cancelled: 0 };
+        const contactUrl = '{{ route('customer.contactStaff', $order) }}';
+        const statusOrder = { pending: 0, accepted: 1, preparing: 2, completed: 3, finished: 4, cancelled: 0 };
+        const badge = document.getElementById('header-status-badge');
 
         function updateEstimatedTime(status) {
             const el = document.getElementById('estimated-time');
@@ -182,17 +219,19 @@
             steps.forEach(li => {
                 const idx = parseInt(li.dataset.stepIndex, 10);
                 li.classList.remove('served', 'active', 'disabled');
-                    if (idx < current) {
+                if (idx < current) {
+                    li.classList.add('served');
+                } else if (idx === current) {
+                    if (status === 'finished') {
                         li.classList.add('served');
-                    } else if (idx === current) {
-                        if (status === 'finished') {
-                            li.classList.add('served');
-                        } else {
-                            li.classList.add('active');
-                        }
                     } else {
-                        li.classList.add('disabled');
+                        li.classList.add('active');
                     }
+                } else {
+                    li.classList.add('disabled');
+                }
+            });
+
             if (badge) {
                 badge.className = 'status-badge status-' + status;
                 badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
@@ -220,10 +259,10 @@
                 if (header) header.dataset.orderStatus = data.status;
 
                 const itemCountEl = document.getElementById('item-count');
-                if (itemCountEl && data.items_count) itemCountEl.textContent = data.items_count + ' items';
+                if (itemCountEl && data.items_count !== undefined) itemCountEl.textContent = data.items_count + ' items';
 
                 const totalEl = document.getElementById('order-total');
-                if (totalEl && data.total) totalEl.textContent = '$' + parseFloat(data.total).toFixed(2);
+                if (totalEl && data.total !== undefined) totalEl.textContent = '$' + parseFloat(data.total).toFixed(2);
 
                 const createdAt = data.created_at;
                 const updatedAt = data.updated_at;
@@ -254,8 +293,216 @@
             }
         }
 
-        setTimeout(fetchStatus, 1000);
+        fetchStatus();
         setInterval(fetchStatus, 5000);
-    })();
+
+        const contactBtn = document.getElementById('contact-staff');
+        const contactModal = document.getElementById('contactModal');
+        const closeContactModal = document.getElementById('close-contact-modal');
+        const cancelContactModal = document.getElementById('cancel-contact-modal');
+        const notifyBtn = document.getElementById('notify-staff-btn');
+        const staffMessage = document.getElementById('staffMessage');
+        const contactError = document.getElementById('contactError');
+        const voiceInputBtn = document.getElementById('voice-input-btn');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const voicePreview = document.getElementById('voicePreview');
+        const voicePlayback = document.getElementById('voicePlayback');
+        const clearVoiceBtn = document.getElementById('clearVoiceBtn');
+
+        let mediaRecorder = null;
+        let mediaStream = null;
+        let recordingChunks = [];
+        let recordedAudioBlob = null;
+        let recording = false;
+
+        function closeModal() {
+            if (contactModal) contactModal.classList.remove('show');
+        }
+
+        function setContactError(message) {
+            if (!contactError) return;
+            contactError.textContent = message;
+            contactError.style.display = message ? 'block' : 'none';
+        }
+
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        function resetVoicePreview() {
+            recordedAudioBlob = null;
+            recordingChunks = [];
+            if (voicePlayback) {
+                voicePlayback.src = '';
+            }
+            if (voicePreview) {
+                voicePreview.style.display = 'none';
+            }
+            if (voiceStatus) {
+                voiceStatus.textContent = 'Tap to record';
+            }
+            if (voiceInputBtn) {
+                voiceInputBtn.innerHTML = '<i class="fa-solid fa-microphone"></i> Record Voice';
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            recording = false;
+            if (voiceStatus) voiceStatus.textContent = 'Processing audio...';
+        }
+
+        async function startRecording() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showToast('error', 'Microphone access is not supported in this browser.');
+                return;
+            }
+
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(mediaStream);
+                recordingChunks = [];
+
+                mediaRecorder.addEventListener('dataavailable', event => {
+                    if (event.data && event.data.size > 0) {
+                        recordingChunks.push(event.data);
+                    }
+                });
+
+                mediaRecorder.addEventListener('stop', () => {
+                    recordedAudioBlob = new Blob(recordingChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(recordedAudioBlob);
+                    if (voicePlayback) {
+                        voicePlayback.src = audioUrl;
+                    }
+                    if (voicePreview) {
+                        voicePreview.style.display = 'flex';
+                    }
+                    if (voiceStatus) {
+                        voiceStatus.textContent = 'Recording completed';
+                    }
+                    if (voiceInputBtn) {
+                        voiceInputBtn.innerHTML = '<i class="fa-solid fa-microphone"></i> Re-record';
+                    }
+                    if (mediaStream) {
+                        mediaStream.getTracks().forEach(track => track.stop());
+                        mediaStream = null;
+                    }
+                });
+
+                mediaRecorder.start();
+                recording = true;
+                if (voiceStatus) voiceStatus.textContent = 'Recording...';
+                if (voiceInputBtn) voiceInputBtn.innerHTML = '<i class="fa-solid fa-stop"></i> Stop';
+            } catch (error) {
+                showToast('error', 'Unable to access microphone. Please allow microphone permission.');
+            }
+        }
+
+        function toggleVoiceInput() {
+            if (recording) {
+                stopRecording();
+            } else {
+                resetVoicePreview();
+                startRecording();
+            }
+        }
+
+        if (contactBtn && contactModal) {
+            contactBtn.addEventListener('click', function() {
+                contactModal.classList.add('show');
+            });
+        }
+
+        if (voiceInputBtn) {
+            voiceInputBtn.addEventListener('click', toggleVoiceInput);
+        }
+
+        if (closeContactModal) {
+            closeContactModal.addEventListener('click', closeModal);
+        }
+
+        if (cancelContactModal) {
+            cancelContactModal.addEventListener('click', closeModal);
+        }
+
+        if (notifyBtn) {
+            notifyBtn.addEventListener('click', async function() {
+                const message = staffMessage?.value.trim() || '';
+                if (!message && !recordedAudioBlob) {
+                    setContactError('Please enter a message or record a voice note for the staff.');
+                    staffMessage?.focus();
+                    return;
+                }
+
+                notifyBtn.disabled = true;
+                notifyBtn.textContent = 'Sending...';
+                setContactError('');
+
+                try {
+                    const formData = new FormData();
+                    formData.append('message', message);
+                    if (recordedAudioBlob) {
+                        formData.append('audio', recordedAudioBlob, `staff-voice-${Date.now()}.webm`);
+                    }
+
+                    const response = await fetch(contactUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: formData,
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Unable to send your request.');
+                    }
+
+                    closeModal();
+                    if (staffMessage) {
+                        staffMessage.value = '';
+                    }
+                    resetVoicePreview();
+                    showToast('success', data.message || 'Staff has been notified.');
+                } catch (error) {
+                    const text = error.message || 'Unable to send your request. Please try again.';
+                    setContactError(text);
+                    showToast('error', text);
+                } finally {
+                    notifyBtn.disabled = false;
+                    notifyBtn.textContent = 'Notify Staff';
+                }
+            });
+        }
+
+        if (contactModal) {
+            contactModal.addEventListener('click', function(event) {
+                if (event.target === contactModal) {
+                    closeModal();
+                }
+            });
+        }
+
+        if (clearVoiceBtn) {
+            clearVoiceBtn.addEventListener('click', function() {
+                resetVoicePreview();
+            });
+        }
+    });
 </script>
 @endsection

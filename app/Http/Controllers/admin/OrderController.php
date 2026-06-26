@@ -93,6 +93,8 @@ class OrderController extends Controller
             ]);
         }
 
+        $table->update([ 'status' => 'occupied' ]);
+
         return response()->json([
             'success' => true,
             'order_id' => $order->id,
@@ -110,6 +112,23 @@ class OrderController extends Controller
             $order->status = $validated['status'];
             $order->save();
 
+            $table = $order->table;
+
+            if ($table) {
+                $activeOrderExists = $table->orders()
+                    ->whereNotIn('status', ['finished', 'cancelled'])
+                    ->where('id', '!=', $order->id)
+                    ->exists();
+
+                if (in_array($order->status, ['pending', 'accepted', 'preparing', 'completed'])) {
+                    $table->update(['status' => 'occupied']);
+                } elseif (in_array($order->status, ['finished', 'cancelled'])) {
+                    if (! $activeOrderExists) {
+                        $table->update(['status' => 'available']);
+                    }
+                }
+            }
+
             return response()->json([
                 'success' => true
             ]);
@@ -122,5 +141,15 @@ class OrderController extends Controller
             ], 422);
 
         }
+    }
+
+    public function tableInvoice(Table $table)
+    {
+        $table->load(['orders.items.item']);
+
+        return view(
+            'admin.orders.table-invoice',
+            compact('table')
+        );
     }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\admin\CategoryController;
 use App\Http\Controllers\admin\TableController;
 use App\Http\Controllers\admin\ItemController;
 use App\Http\Controllers\admin\OrderController;
+use App\Http\Controllers\admin\StaffNotificationController;
 use App\Models\Category;
 use App\Models\Item;
 
@@ -79,6 +80,21 @@ Route::patch(
     [OrderController::class, 'updateStatus']
 )->name('admin.orders.updateStatus');
 
+Route::get(
+    '/orders/table/{table}/invoice',
+    [OrderController::class, 'tableInvoice']
+)->name('admin.orders.tableInvoice');
+
+Route::get(
+    '/admin/staff-notifications',
+    [StaffNotificationController::class, 'index']
+)->name('admin.staffNotifications.index');
+
+Route::patch(
+    '/admin/staff-notifications/{notification}/read',
+    [StaffNotificationController::class, 'markAsRead']
+)->name('admin.staffNotifications.markRead');
+
 use App\Http\Controllers\customer\CustomerController;
 
 Route::get(
@@ -107,9 +123,19 @@ Route::get(
 )->name('orders.success');
 
 Route::get(
+    'customer/orders/{table}',
+    [CustomerController::class, 'orders']
+)->name('customer.orders');
+
+Route::get(
     '/track-order/{order}',
     [CustomerController::class, 'trackOrder']
 )->name('track.order');
+
+Route::post(
+    '/track-order/{order}/contact',
+    [CustomerController::class, 'contactStaff']
+)->name('customer.contactStaff');
 
 Route::get(
     '/order-status/{order}',

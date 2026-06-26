@@ -15,6 +15,12 @@
             <button class="menu-toggle">
                 <i class="fa-solid fa-bars"></i>
             </button>
+            <a href="{{ route('admin.staffNotifications.index') }}" class="notification-toggle" aria-label="View notifications">
+                <i class="fa-solid fa-bell"></i>
+                @if(!empty($newStaffNotificationsCount))
+                    <span class="notification-count">{{ $newStaffNotificationsCount }}</span>
+                @endif
+            </a>
 
         </div>
 
@@ -51,13 +57,14 @@
         </div>
 
         <div class="profile">
-            <p class="profile-name">3sach</p>
-
-            <img
-                src="{{ asset('assets/profile-image.jpg') }}"
-                alt="profile"
-                class="profile-image"
-            >
+            <div class="profile-info">
+                <p class="profile-name">3sach</p>
+                <img
+                    src="{{ asset('assets/profile-image.jpg') }}"
+                    alt="profile"
+                    class="profile-image"
+                >
+            </div>
         </div>
 
     </div>

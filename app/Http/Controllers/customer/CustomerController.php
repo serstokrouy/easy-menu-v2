@@ -8,6 +8,7 @@ use App\Models\Item;
 use App\Models\Order;
 use App\Models\Table;
 use App\Models\Category;
+use App\Models\StaffNotification;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
@@ -51,6 +52,10 @@ class CustomerController extends Controller
 
         $items = $itemsQuery->get();
 
+        if ($table->status === 'available') {
+            $table->update(['status' => 'occupied']);
+        }
+
         return view(
             'customer.menu.index',
             compact(
@@ -90,6 +95,22 @@ class CustomerController extends Controller
     }
 
     /**
+     * Customer order list page
+     */
+    public function orders(Table $table)
+    {
+        $orders = Order::with('items', 'table')
+            ->where('table_id', $table->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view(
+            'customer.orders.index',
+            compact('table', 'orders')
+        );
+    }
+
+    /**
      * Track order page
      */
     public function trackOrder(Order $order)
@@ -105,6 +126,32 @@ class CustomerController extends Controller
             'customer.track-order.index',
             compact('order', 'table')
         );
+    }
+
+    public function contactStaff(Order $order, Request $request)
+    {
+        $request->validate([
+            'message' => 'nullable|string|max:500',
+            'audio' => 'nullable|file|mimes:webm,ogg,wav,mp3|max:10240',
+        ]);
+
+        $audioPath = null;
+        if ($request->hasFile('audio')) {
+            $audioPath = $request->file('audio')->store('staff-notifications', 'public');
+        }
+
+        StaffNotification::create([
+            'table_id' => $order->table_id,
+            'order_id' => $order->id,
+            'message' => $request->input('message') ?? 'Voice request only',
+            'audio_path' => $audioPath,
+            'status' => 'new',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Your request has been sent to staff. Please wait for assistance.',
+        ]);
     }
 
     /**

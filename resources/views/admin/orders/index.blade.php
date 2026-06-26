@@ -258,6 +258,10 @@
 
                                 </form>
 
+                                <a href="{{ route('admin.orders.tableInvoice', $order->table) }}" class="action-btn small">
+                                    Table Invoice
+                                </a>
+
                             </td>
 
                         </tr>

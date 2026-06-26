@@ -178,6 +178,14 @@ main {
     .profile img {
         display: none;
     }
+    .profile {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .notification-pill {
+        width: auto;
+        justify-content: center;
+    }
 }
 
 /* ==========================================================================
@@ -188,6 +196,7 @@ main {
         padding: 15px;
         padding-bottom: 0;
         flex-wrap: wrap; /* Allows menu to wrap underneath the title row */
+        align-items: flex-start;
     }
 
     .menu-toggle {
@@ -225,6 +234,19 @@ main {
         display: none;
     }
 
+    .notification-pill {
+        width: 100%;
+        justify-content: space-between;
+        padding: 10px 12px;
+    }
+
+    .notification-count {
+        min-width: 18px;
+        height: 18px;
+        padding: 0 6px;
+        font-size: 0.75rem;
+    }
+
     .header-title h1 {
         font-size: 1.2rem;
     }
@@ -234,6 +256,13 @@ main {
 ========================== */
 
 .profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.profile-info {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -252,6 +281,46 @@ main {
 .profile-name {
     color: var(--color-primary);
     font-weight: 600;
+}
+
+.notification-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    background: #F1F5F9;
+    color: var(--color-primary);
+    text-decoration: none;
+    position: relative;
+}
+
+.notification-toggle:hover {
+    background: #E2E8F0;
+}
+
+.notification-toggle i {
+    font-size: 1rem;
+}
+
+.notification-count {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 
