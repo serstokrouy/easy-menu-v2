@@ -25,7 +25,7 @@
         </div>
 
         <div class="actions" id="navMenu">
-            <a href="#" class="action-btn">
+            <a href="{{ route('admin.dashboard.index') }}" class="action-btn">
                 <i class="fa-solid fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>

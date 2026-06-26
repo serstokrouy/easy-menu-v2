@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\admin\CategoryController;
+use App\Http\Controllers\admin\DashboardController;
 use App\Http\Controllers\admin\TableController;
 use App\Http\Controllers\admin\ItemController;
 use App\Http\Controllers\admin\OrderController;
@@ -84,6 +85,11 @@ Route::get(
     '/orders/table/{table}/invoice',
     [OrderController::class, 'tableInvoice']
 )->name('admin.orders.tableInvoice');
+
+Route::get(
+    '/admin/dashboard',
+    [DashboardController::class, 'index']
+)->name('admin.dashboard.index');
 
 Route::get(
     '/admin/staff-notifications',
